@@ -7,7 +7,7 @@ class ZenoPay:
     def __init__(self, api_key, sandbox, webhook_url):
         self.api_key = api_key
         self.sandbox = sandbox
-        self.endpoint = 'https://zeno.co.tz/api/v1/pay.php'  # Updated endpoint URL
+        self.endpoint = 'https://zeno.co.tz/api/v1/pay'  # Updated endpoint URL
         self.webhook_url = webhook_url
         self.logger = logging.getLogger(__name__)
 
