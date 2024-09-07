@@ -21,7 +21,6 @@ POST https://api.zeno.africa
     'account_id': 'YOUR_ACCOUNT_ID',
     'api_key': 'YOUR_API_KEY',
     'secret_key': 'YOUR_SECRET_KEY',
-    'push_usd': 1  # Add this field to initiate USSD payment
 }
 ```
 
@@ -42,7 +41,6 @@ order_data = {
     'account_id': 'YOUR_ACCOUNT_ID',
     'api_key': 'YOUR_API_KEY',
     'secret_key': 'YOUR_SECRET_KEY',
-    'push_usd': 1  # Indicates that USSD payment should be initiated
 }
 
 try:
