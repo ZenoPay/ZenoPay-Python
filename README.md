@@ -62,7 +62,7 @@ To check the status of an order, you need to send a POST request to the status c
 
 **API Endpoint:**
 ```
-POST https://api.zeno.africa/status
+POST https://api.zeno.africa/order-status
 ```
 
 **Request Data:**
