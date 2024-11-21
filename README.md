@@ -81,7 +81,7 @@ import requests
 import json
 
 # URL of the API endpoint
-url = "https://api.zeno.africa/status"
+url = "https://api.zeno.africa/order-status"
 
 def check_order_status(order_id):
     # Data to send for checking the order status
@@ -167,5 +167,5 @@ if __name__ == '__main__':
 ### Summary
 
 - **Create an Order and Push USSD Payment:** Send a POST request to `https://api.zeno.africa` with order and payment details.
-- **Check Order Status:** Send a POST request to `https://api.zeno.africa/status` with `order_id`.
+- **Check Order Status:** Send a POST request to `https://api.zeno.africa/order-status` with `order_id`.
 - **Webhook Handling:** Set up an endpoint to receive and process webhook notifications.
