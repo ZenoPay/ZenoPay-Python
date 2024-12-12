@@ -139,29 +139,27 @@ To handle incoming webhook notifications, set up an endpoint on your server to r
 
 **Example Webhook Handler in Python:**
 ```python
-from flask import Flask, request, jsonify
+from flask import Flask, request
+import datetime
 
 app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.json
-    # Log the received data for debugging
-    with open('webhook_log.txt', 'a') as log_file:
-        log_file.write(f"Received data: {data}\n")
-    
-    # Process the webhook payload
-    order_id = data.get('order_id')
-    payment_status = data.get('payment_status')
-    
-    # Example logic to update order status in the database
-    # update_order_status(order_id, payment_status)
-    
-    # Respond to the webhook sender
-    return jsonify({'status': 'success', 'message': 'Webhook received'})
+def handle_webhook():
+    if request.method == 'POST':
+        # Get the raw POST data from the incoming webhook
+        data = request.data.decode('utf-8')
+
+        # Log the raw data with a timestamp
+        with open('weblogs.txt', 'a') as log_file:
+            timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"[{timestamp}] WebHook Data: {data}\n")
+
+        return 'Webhook received', 200
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(debug=True)
+
 ```
 
 ### Summary
