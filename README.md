@@ -13,7 +13,6 @@ POST https://api.zeno.africa
 **Request Data:**
 ```python
 {
-    'create_order': 1,
     'buyer_email': 'YOUR_CUSTOMER_EMAIL',
     'buyer_name': 'YOUR_CUSTOMER_NAME',
     'buyer_phone': '0752117588',
