@@ -18,6 +18,7 @@ POST https://api.zeno.africa
     'buyer_phone': '0752117588',
     'amount': 10000,
     'account_id': 'YOUR_ACCOUNT_ID',
+    'webhook_url': 'your webhook url',
     'api_key': 'YOUR_API_KEY',
     'secret_key': 'YOUR_SECRET_KEY',
 }
@@ -37,6 +38,7 @@ order_data = {
     'buyer_name': 'YOUR_CUSTOMER_NAME',
     'buyer_phone': '0752117588',
     'amount': 10000,
+    'webhook_url': 'your webhook url',
     'account_id': 'YOUR_ACCOUNT_ID',
     'api_key': 'YOUR_API_KEY',
     'secret_key': 'YOUR_SECRET_KEY',
