@@ -15,7 +15,7 @@ import requests
 import json
 
 # URL of the API endpoint
-url = "https://apigw.zeno.africa/mapenzi.php"
+url = "https://api.zeno.africa"
 
 # Data to send for creating the order and pushing USSD payment
 order_data = {
