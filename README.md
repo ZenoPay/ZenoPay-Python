@@ -127,6 +127,10 @@ if __name__ == '__main__':
     app.run(debug=True)
 ```
 
+
+WebHook Response: {"order_id":"677e43274d7cb","payment_status":"COMPLETED","reference":"1003020496","metadata":{"product_id":"12345","color":"blue","size":"L","custom_notes":"Please gift-wrap this item."}}
+
+
 ### **Summary of the Workflow**
 1. **Order Creation:** You create an order using a `POST` request, including the buyer’s details, payment information, and any additional metadata that may be required.
 2. **Order Status Check:** To check the status of the order, send a `POST` request with the `order_id`.
