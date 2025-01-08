@@ -20,11 +20,11 @@ url = "https://apigw.zeno.africa/mapenzi.php"
 # Data to send for creating the order and pushing USSD payment
 order_data = {
     "create_order": 1,
-    "buyer_email": "iamdastani@gmail.com",
+    "buyer_email": "jackson@gmail.com",
     "buyer_name": "dastani",
     "buyer_phone": "0652449389",
     "amount": 1000,
-    "webhook_url": "https://tunda.zeno.africa/webhook.php",
+    "webhook_url": "https://yourwebsite.com/webhook",
     "account_id": "zp87778",
     "metadata": json.dumps({
         "product_id": "12345",
