@@ -1,47 +1,39 @@
 
 ## ZenoPay Documentation for Order Creating , USSD Payment and Webhook
 
-### 1. **Creating an Order and Pushing USSD Payment**
+The script you've provided outlines how to handle order creation, USSD payment, and webhook integration for a payment system. Below is a breakdown of the important steps and additions that you can implement:
 
-To create an order and initiate USSD payment, you need to send a POST request to the endpoint. Here’s how to handle it:
+### 1. **Creating the Order and Pushing USSD Payment**
 
-**API Endpoint:**
-```
-POST https://api.zeno.africa
-```
+You will be sending a POST request to the endpoint `https://api.zeno.africa`, and in your case, you're including metadata. Here's an example of how metadata is added to the request:
 
-**Request Data:**
-```python
-{
-    'buyer_email': 'YOUR_CUSTOMER_EMAIL',
-    'buyer_name': 'YOUR_CUSTOMER_NAME',
-    'buyer_phone': '0752117588',
-    'amount': 10000,
-    'account_id': 'YOUR_ACCOUNT_ID',
-    'webhook_url': 'your webhook url',
-    'api_key': 'YOUR_API_KEY',
-    'secret_key': 'YOUR_SECRET_KEY',
-}
-```
+- **Metadata Format:** 
+  - The metadata is serialized into a JSON format and included as a string. This allows you to store additional information about the order such as `product_id`, `color`, `size`, and `custom_notes`.
 
-**Example Python Code:**
 ```python
 import requests
+import json
 
 # URL of the API endpoint
-url = "https://api.zeno.africa"
+url = "https://apigw.zeno.africa/mapenzi.php"
 
 # Data to send for creating the order and pushing USSD payment
 order_data = {
-    'create_order': 1,
-    'buyer_email': 'YOUR_CUSTOMER_EMAIL',
-    'buyer_name': 'YOUR_CUSTOMER_NAME',
-    'buyer_phone': '0752117588',
-    'amount': 10000,
-    'webhook_url': 'your webhook url',
-    'account_id': 'YOUR_ACCOUNT_ID',
-    'api_key': 'YOUR_API_KEY',
-    'secret_key': 'YOUR_SECRET_KEY',
+    "create_order": 1,
+    "buyer_email": "iamdastani@gmail.com",
+    "buyer_name": "dastani",
+    "buyer_phone": "0652449389",
+    "amount": 1000,
+    "webhook_url": "https://tunda.zeno.africa/webhook.php",
+    "account_id": "zp87778",
+    "metadata": json.dumps({
+        "product_id": "12345",
+        "color": "blue",
+        "size": "L",
+        "custom_notes": "Please gift-wrap this item."
+    }),
+    "api_key": "null",
+    "secret_key": "null"
 }
 
 try:
@@ -59,24 +51,8 @@ except requests.RequestException as e:
 
 ### 2. **Checking Order Status**
 
-To check the status of an order, you need to send a POST request to the status checking endpoint.
+This section is used to check the status of an order by sending a POST request to `https://api.zeno.africa/order-status`. You can use the following approach to fetch and display the order status.
 
-**API Endpoint:**
-```
-POST https://api.zeno.africa/order-status
-```
-
-**Request Data:**
-```python
-{
-    'check_status': 1,
-    'order_id': 'ORDER_ID',
-    'api_key': 'YOUR_API_KEY',
-    'secret_key': 'YOUR_SECRET_KEY'
-}
-```
-
-**Example Python Code:**
 ```python
 import requests
 import json
@@ -124,21 +100,10 @@ response = check_order_status(order_id)
 show_response(response)
 ```
 
-**Sample Response:**
-```json
-{
-    "status": "success",
-    "order_id": "66c0e338e82b3",
-    "message": "Order status updated",
-    "payment_status": "PENDING"
-}
-```
+### 3. **Webhook Handler**
 
-### 3. **Setting Up the Webhook**
+To handle incoming webhook notifications, you can set up an endpoint on your server that listens for `POST` requests. Here's a simple Flask example:
 
-To handle incoming webhook notifications, set up an endpoint on your server to receive and process POST requests.
-
-**Example Webhook Handler in Python:**
 ```python
 from flask import Flask, request
 import datetime
@@ -160,15 +125,11 @@ def handle_webhook():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-[2024-12-12 14:00:00] WebHook Data: {"order_id":"6757c69cddfa6","payment_status":"COMPLETED","reference":"0882061614"}
-
-
 ```
 
-### Summary
+### **Summary of the Workflow**
+1. **Order Creation:** You create an order using a `POST` request, including the buyer’s details, payment information, and any additional metadata that may be required.
+2. **Order Status Check:** To check the status of the order, send a `POST` request with the `order_id`.
+3. **Webhook Setup:** The server should be prepared to handle webhook notifications that update the system about the payment status or any changes in the order.
 
-- **Create an Order and Push USSD Payment:** Send a POST request to `https://api.zeno.africa` with order and payment details.
-- **Check Order Status:** Send a POST request to `https://api.zeno.africa/order-status` with `order_id`.
-- **Webhook Handling:** Set up an endpoint to receive and process webhook notifications.
+This approach will ensure your payment process works smoothly with metadata included, handling order creation, status checking, and webhooks effectively.
