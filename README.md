@@ -19,7 +19,6 @@ url = "https://api.zeno.africa"
 
 # Data to send for creating the order and pushing USSD payment
 order_data = {
-    "create_order": 1,
     "buyer_email": "jackson@gmail.com",
     "buyer_name": "dastani",
     "buyer_phone": "0652449389",
