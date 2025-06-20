@@ -1,138 +1,176 @@
 
-## ZenoPay Documentation for Order Creating , USSD Payment and Webhook
 
-The script you've provided outlines how to handle order creation, USSD payment, and webhook integration for a payment system. Below is a breakdown of the important steps and additions that you can implement:
+## ✅ ZenoPay API Integration Guide – Order Creation, USSD Payment, and Webhook Handling
 
-### 1. **Creating the Order and Pushing USSD Payment**
+This guide provides Python-based code examples to integrate with ZenoPay's Mobile Money Tanzania API, enabling:
 
-You will be sending a POST request to the endpoint `https://api.zeno.africa`, and in your case, you're including metadata. Here's an example of how metadata is added to the request:
+1. **Order Creation & USSD Push**
+2. **Order Status Check**
+3. **Webhook Notification Handling**
 
-- **Metadata Format:** 
-  - The metadata is serialized into a JSON format and included as a string. This allows you to store additional information about the order such as `product_id`, `color`, `size`, and `custom_notes`.
+---
+
+### 🔹 1. Create Order & Initiate Mobile Money (USSD Push)
+
+> **Endpoint:** `https://zenoapi.com/api/payments/mobile_money_tanzania`
+> **Method:** `POST`
+> **Authentication:** Use `x-api-key` in the request header
 
 ```python
 import requests
 import json
+import uuid
 
-# URL of the API endpoint
-url = "https://api.zeno.africa"
+# --- ZenoPay API Config ---
+API_URL = "https://zenoapi.com/api/payments/mobile_money_tanzania"
+API_KEY = "YOUR_API_KEY"
 
-# Data to send for creating the order and pushing USSD payment
-order_data = {
+# --- Unique Order ID (UUID recommended) ---
+order_id = str(uuid.uuid4())
+
+# --- Payload for order creation with metadata ---
+payload = {
+    "order_id": order_id,
     "buyer_email": "jackson@gmail.com",
-    "buyer_name": "dastani",
-    "buyer_phone": "0652449389",
-    "amount": 1000,
-    "webhook_url": "https://yourwebsite.com/webhook",
-    "account_id": "zp87778",
-    "metadata": json.dumps({
+    "buyer_name": "Dastani",
+    "buyer_phone": "0652449389",  # Format: 07XXXXXXXX
+    "amount": 1000,  # Amount in TZS
+    "webhook_url": "https://yourdomain.com/webhook",
+    "metadata": {
         "product_id": "12345",
         "color": "blue",
         "size": "L",
         "custom_notes": "Please gift-wrap this item."
-    }),
-    "api_key": "null",
-    "secret_key": "null"
+    }
 }
 
+# --- Headers including API Key ---
+headers = {
+    "Content-Type": "application/json",
+    "x-api-key": API_KEY
+}
+
+# --- Send POST Request ---
 try:
-    # Send POST request to create the order and initiate USSD payment
-    response = requests.post(url, data=order_data)
-    
-    # Print the response
-    print(response.text)
+    response = requests.post(API_URL, headers=headers, json=payload)
+    response.raise_for_status()
+    print("✅ Order Submitted Successfully:")
+    print(json.dumps(response.json(), indent=4))
 
 except requests.RequestException as e:
-    # Log errors to a file
-    with open('error_log.txt', 'a') as log_file:
-        log_file.write(f"Error: {e}\n")
+    print(f"❌ Failed to create order: {e}")
 ```
 
-### 2. **Checking Order Status**
+---
 
-This section is used to check the status of an order by sending a POST request to `https://api.zeno.africa/order-status`. You can use the following approach to fetch and display the order status.
+### 🔹 2. Check Order Status
+
+> **Endpoint:** `https://zenoapi.com/api/payments/order-status`
+> **Method:** `GET`
+> **Parameters:** `order_id` in query string
+> **Authentication:** `x-api-key` header
 
 ```python
 import requests
 import json
 
-# URL of the API endpoint
-url = "https://api.zeno.africa/order-status"
+# --- Config ---
+API_KEY = "YOUR_API_KEY"
+ORDER_ID = "66c4bb9c9abb1"
 
-def check_order_status(order_id):
-    # Data to send for checking the order status
-    status_data = {
-        'check_status': 1,
-        'order_id': order_id,
-        'api_key': 'YOUR_API_KEY',
-        'secret_key': 'YOUR_SECRET_KEY'
-    }
+# --- Request URL ---
+url = f"https://zenoapi.com/api/payments/order-status?order_id={ORDER_ID}"
 
-    try:
-        # Send POST request to check the order status
-        response = requests.post(url, data=status_data)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        return response.json()  # Return the response as JSON
-    except requests.RequestException as e:
-        log_error(f"Error fetching order status: {e}")
-        return {
-            'success': False,
-            'message': 'Error fetching order status'
-        }
+# --- Headers ---
+headers = {
+    "x-api-key": API_KEY
+}
 
-def log_error(message):
-    # Function to log errors
-    with open('error_log.txt', 'a') as log_file:
-        log_file.write(f"{message}\n")
+# --- GET Request to check order status ---
+try:
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
 
-def show_response(response):
-    # Function to display the response
-    print(json.dumps(response, indent=2))
+    if data.get("resultcode") == "000":
+        order = data["data"][0]
+        print("✅ Order Status:")
+        print(json.dumps({
+            "order_id": order["order_id"],
+            "payment_status": order["payment_status"],
+            "amount": order["amount"],
+            "channel": order["channel"],
+            "msisdn": order["msisdn"],
+            "reference": order["reference"],
+            "created": order["creation_date"]
+        }, indent=4))
+    else:
+        print(f"❌ Failed: {data.get('message')}")
 
-# Order ID to check
-order_id = '66c4bb9c9abb1'
-
-# Get the order status
-response = check_order_status(order_id)
-
-# Show the response
-show_response(response)
+except requests.RequestException as e:
+    print(f"❌ Error: {e}")
 ```
 
-### 3. **Webhook Handler**
+---
 
-To handle incoming webhook notifications, you can set up an endpoint on your server that listens for `POST` requests. Here's a simple Flask example:
+### 🔹 3. Webhook Listener for Payment Status Updates
+
+> ZenoPay will call your `webhook_url` when a payment is marked `COMPLETED`. The webhook payload includes metadata and transaction details.
 
 ```python
 from flask import Flask, request
 import datetime
+import json
 
 app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def handle_webhook():
-    if request.method == 'POST':
-        # Get the raw POST data from the incoming webhook
-        data = request.data.decode('utf-8')
+    try:
+        # Parse JSON payload
+        payload = request.json
 
-        # Log the raw data with a timestamp
+        # Log payload to file with timestamp
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open('weblogs.txt', 'a') as log_file:
-            timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            log_file.write(f"[{timestamp}] WebHook Data: {data}\n")
+            log_file.write(f"[{timestamp}] Webhook Received:\n")
+            log_file.write(json.dumps(payload, indent=2) + "\n")
 
         return 'Webhook received', 200
 
+    except Exception as e:
+        return f'Webhook error: {e}', 500
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000, debug=True)
 ```
 
+#### 📥 Example Webhook Payload
 
-WebHook Response: {"order_id":"677e43274d7cb","payment_status":"COMPLETED","reference":"1003020496","metadata":{"product_id":"12345","color":"blue","size":"L","custom_notes":"Please gift-wrap this item."}}
+```json
+{
+  "order_id": "677e43274d7cb",
+  "payment_status": "COMPLETED",
+  "reference": "1003020496",
+  "metadata": {
+    "product_id": "12345",
+    "color": "blue",
+    "size": "L",
+    "custom_notes": "Please gift-wrap this item."
+  }
+}
+```
 
+---
 
-### **Summary of the Workflow**
-1. **Order Creation:** You create an order using a `POST` request, including the buyer’s details, payment information, and any additional metadata that may be required.
-2. **Order Status Check:** To check the status of the order, send a `POST` request with the `order_id`.
-3. **Webhook Setup:** The server should be prepared to handle webhook notifications that update the system about the payment status or any changes in the order.
+### ✅ Summary: Full Payment Flow
 
-This approach will ensure your payment process works smoothly with metadata included, handling order creation, status checking, and webhooks effectively.
+| Step                 | Description                                                |
+| -------------------- | ---------------------------------------------------------- |
+| Order Creation       | Submit buyer info, amount, metadata, and webhook URL       |
+| USSD Push            | Payment is initiated to buyer's mobile via USSD            |
+| Order Status Check   | Use `GET` request to check payment status                  |
+| Webhook Notification | Receive updates to your server once payment is `COMPLETED` |
+
+---
+
