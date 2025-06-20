@@ -1,48 +1,54 @@
 import requests
+import json
 
-# The endpoint URL where the request will be sent
-endpoint_url = "https://api.zeno.africa/order-status"
+# --- Configuration ---
+API_KEY = "YOUR_API_KEY"
+ORDER_ID = "66c4bb9c9abb1"
 
-# Order ID that you want to check the status for
-order_id = "66c4bb9c9abb1"
+# ZenoPay Order Status endpoint
+API_URL = f"https://zenoapi.com/api/payments/order-status?order_id={ORDER_ID}"
 
-# Data to be sent in the POST request
-post_data = {
-    'check_status': 1,
-    'order_id': order_id,
-    'api_key': 'YOUR API',
-    'secret_key': 'YOUR SECRET KEY'
+# Request headers
+headers = {
+    "x-api-key": API_KEY
 }
 
 try:
-    # Send the POST request
-    response = requests.post(endpoint_url, data=post_data)
-
-    # Check if the request was successful
+    # Send GET request
+    response = requests.get(API_URL, headers=headers)
     response.raise_for_status()
 
-    # Decode the JSON response
-    response_data = response.json()
+    # Parse JSON response
+    data = response.json()
 
-    # Format the response to match the desired structure
-    if response_data['status'] == 'success':
+    # Check if the response was successful
+    if data.get("resultcode") == "000":
+        order_info = data.get("data", [])[0]  # First result in the list
+
         result = {
             "status": "success",
-            "order_id": response_data['order_id'],
-            "message": response_data['message'],
-            "payment_status": response_data.get('payment_status')
+            "order_id": order_info.get("order_id"),
+            "payment_status": order_info.get("payment_status"),
+            "amount": order_info.get("amount"),
+            "channel": order_info.get("channel"),
+            "reference": order_info.get("reference"),
+            "msisdn": order_info.get("msisdn"),
+            "message": data.get("message")
         }
     else:
         result = {
             "status": "error",
-            "message": response_data['message']
+            "message": data.get("message", "Unable to fetch order status")
         }
 
-except requests.exceptions.RequestException as e:
-    result = {
-        "status": "error",
-        "message": f'Request error: {str(e)}'
-    }
+except requests.exceptions.HTTPError as http_err:
+    result = {"status": "error", "message": f"HTTP error: {http_err}"}
+except requests.exceptions.ConnectionError:
+    result = {"status": "error", "message": "Connection error."}
+except requests.exceptions.Timeout:
+    result = {"status": "error", "message": "Request timed out."}
+except requests.exceptions.RequestException as err:
+    result = {"status": "error", "message": f"Request error: {err}"}
 
-# Print the result in JSON format
-print(result)
+# Print final result
+print(json.dumps(result, indent=4))
